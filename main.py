@@ -9,7 +9,7 @@ stocks = pd.read_csv('sp500stocks.csv')['Symbol']
 ##print(stocks)
 
 #specify column names for final output
-column_names = ['Ticker', 'Company Names', 'Stock Price', 'Market Cap.', 'No. of Stocks to Buy']
+column_names = ['Ticker', 'Company Name', 'Stock Price', 'Market Cap.', 'No. of Stocks to Buy']
 
 #build DataFrame template with corresponding column names
 df = pd.DataFrame(columns=column_names)
@@ -87,3 +87,26 @@ for i, stock_price in enumerate(df['Stock Price']):
     df.loc[i, 'No. of Stocks to Buy'] = math.floor(position_size/stock_price) #round-off to lower bound int
 
 print(df)
+
+#initialise xlsxwriter
+writer = pd.ExcelWriter('suggested_portfolio.xlsx', engine='xlsxwriter')
+df.to_excel(writer, sheet_name='Suggested Portfolio', index=False)
+
+#set format to be used in xlsx file
+string_format = writer.book.add_format({'border': 1})
+dollar_format = writer.book.add_format({'num_format':'$0.00','border': 1})
+integer_format = writer.book.add_format({'num_format':'0','border': 1})
+
+column_formats = {
+    'A': ['Ticker', string_format],
+    'B': ['Company Name', string_format],
+    'C': ['Stock Price', dollar_format],
+    'D': ['Market Cap.', dollar_format],
+    'E': ['No. of Stocks to Buy', integer_format]
+    }
+
+for column in column_formats.keys():
+    writer.sheets['Suggested Portfolio'].set_column(f'{column}:{column}', 20, column_formats[column][1])
+    writer.sheets['Suggested Portfolio'].write(f'{column}1', column_formats[column][0], string_format)
+
+writer.save()
