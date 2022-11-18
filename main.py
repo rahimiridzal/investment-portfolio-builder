@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import requests
 import xlsxwriter
+import math
 
 #keep stock symbols, other data will be extracted from IEX Cloud
 stocks = pd.read_csv('sp500stocks.csv')['Symbol']
@@ -55,7 +56,7 @@ for i in range(0, len(grouped_stocks)):
     grouped_stocks_list.append(','.join(grouped_stocks[i]))
 ##print(grouped_stocks_list)
 
-#use Batch API Call for faster performance (have tested that all stocks data are available)
+#use Batch API Call(have tested that all stocks data are available)
 
 index = 0
 for one_group in grouped_stocks_list:
@@ -68,5 +69,21 @@ for one_group in grouped_stocks_list:
         market_cap = data[ticker]['quote']['marketCap']
         df.loc[index,:] = [ticker, company_name, stock_price, market_cap, 'N/A']
         index += 1
+##print(df)
+
+portfolio_size = float(input("Enter your portfolio size in US Dollar: $"))
+max_no_dif_stocks = int(input("Enter the maximum number of different stocks you want to have in your portfolio: "))
+
+if max_no_dif_stocks > len(df.index):
+    max_no_dif_stocks = len(df.index)
+
+position_size = portfolio_size/max_no_dif_stocks
+
+#drop not required stocks
+df = df.iloc[:max_no_dif_stocks,:]
+##print(df)
+
+for i, stock_price in enumerate(df['Stock Price']):
+    df.loc[i, 'No. of Stocks to Buy'] = math.floor(position_size/stock_price) #round-off to lower bound int
 
 print(df)
