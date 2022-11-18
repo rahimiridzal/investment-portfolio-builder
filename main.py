@@ -57,7 +57,6 @@ for i in range(0, len(grouped_stocks)):
 ##print(grouped_stocks_list)
 
 #use Batch API Call(have tested that all stocks data are available)
-
 index = 0
 for one_group in grouped_stocks_list:
     batch_api_url = f'https://sandbox.iexapis.com/stable/stock/market/batch/?types=quote&symbols={one_group}&token={IEX_CLOUD_API_TOKEN}'
@@ -71,8 +70,22 @@ for one_group in grouped_stocks_list:
         index += 1
 ##print(df)
 
-portfolio_size = float(input("Enter your portfolio size in US Dollar: $"))
-max_no_dif_stocks = int(input("Enter the maximum number of different stocks you want to have in your portfolio: "))
+while True:
+    try:
+        portfolio_size = float(input("\nEnter your portfolio size in US Dollar: $"))
+    except ValueError:
+        print("\nOps, sorry! Please enter a valid number.")
+        continue
+    else:
+        break
+
+while True:
+    try:
+        max_no_dif_stocks = int(input("\nEnter the maximum number of different stocks you want to have in your portfolio: "))
+    except ValueError:
+        print("\nSorry, can you try enter a valid integer again.")
+    else:
+        break
 
 if max_no_dif_stocks > len(df.index):
     max_no_dif_stocks = len(df.index)
@@ -85,8 +98,7 @@ df = df.iloc[:max_no_dif_stocks,:]
 
 for i, stock_price in enumerate(df['Stock Price']):
     df.loc[i, 'No. of Stocks to Buy'] = math.floor(position_size/stock_price) #round-off to lower bound int
-
-print(df)
+##print(df)
 
 #initialise xlsxwriter
 writer = pd.ExcelWriter('suggested_portfolio.xlsx', engine='xlsxwriter')
@@ -110,3 +122,5 @@ for column in column_formats.keys():
     writer.sheets['Suggested Portfolio'].write(f'{column}1', column_formats[column][0], string_format)
 
 writer.save()
+
+print("\nCongratulations! Your Investment Portfolio has been built.\n\nCheckout the suggested_portfolio.xlsx file.\n\nThank you for using our service and hope to see you again!\n\n")
